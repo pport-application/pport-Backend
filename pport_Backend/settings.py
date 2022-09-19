@@ -25,13 +25,15 @@ SECRET_KEY = 'django-insecure-#i@@_j^v6q9s=$#vrheg=qk&oimu3anq$cz#o%w5rve_)6v!_!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Admin page settings
+ADMIN_ENABLED = True
+
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -39,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+if ADMIN_ENABLED is True:
+    INSTALLED_APPS.append('django.contrib.admin')
+    
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
