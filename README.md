@@ -13,18 +13,18 @@ If you are seeing this repository, it is assumed that you already have access to
 
 The next, thing that needs to be done is to set the Python interpreter in PyCharm, so, venv's python will be utilized as well as other packages installed in the project's scope.
 
-*File | Settings | Project: pport-Backend | Python Interpreter for Windows and Linux*
-*PyCharm | Preferences | Project: pport-Backend | Python Interpreter for macOS*
+*File | Settings | Project: pport-Backend | Python Interpreter for Windows and Linux* <br />
+*PyCharm | Preferences | Project: pport-Backend | Python Interpreter for macOS* <br />
  
 Please add a new interpreter by clicking the setting icon and then add.
 
-Inside *Virtualenv Environment | New Environment* add a new path which is */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv*
+Inside *Virtualenv Environment | New Environment* add a new path which is */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv* <br />
 
 Close the Settings/Preferences page and go to *Edit Configuration* on the left side of run.
 
-Script Path: */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py* 
-Parameters: *runserver* 
-Python Interpreter: (Select your project interpreter added recently as */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv* 
+Script Path: */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py* <br />
+Parameters: *runserver* <br />
+Python Interpreter: (Select your project interpreter added recently as */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv* <br />
 
 Now, you are ready to develop the project.
 
