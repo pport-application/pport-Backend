@@ -42,7 +42,7 @@ The commands for activating venv are as follows.
 
 ## Git Documentation
 
-Please do not make changes in **main** branch. Create a new branch from developing and merge back when you are done.
+Please do not make changes in **master** branch. Create a new branch from developing and merge back when you are done.
 
 A detailed explanation for the branches is given below.
 
