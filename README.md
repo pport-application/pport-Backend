@@ -22,9 +22,11 @@ Inside *Virtualenv Environment | New Environment* add a new path which is */LOCA
 
 Close the Settings/Preferences page and go to *Edit Configuration* on the left side of run.
 
+```
 Script Path: */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py* <br />
 Parameters: *runserver* <br />
 Python Interpreter: (Select your project interpreter added recently as */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv* <br />
+```
 
 Now, you are ready to develop the project.
 
