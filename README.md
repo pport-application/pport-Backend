@@ -21,9 +21,10 @@ Please add a new interpreter by clicking the setting icon and then add.
 Inside *Virtualenv Environment | New Environment* add a new path which is */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv*
 
 Close the Settings/Preferences page and go to *Edit Configuration* on the left side of run.
-Script Path: */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py*
-Parameters: *runserver*
-Python Interpreter: (Select your project interpreter added recently as */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv*
+
+Script Path: */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py* 
+Parameters: *runserver* 
+Python Interpreter: (Select your project interpreter added recently as */LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv* 
 
 Now, you are ready to develop the project.
 
