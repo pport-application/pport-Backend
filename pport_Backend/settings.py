@@ -22,16 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#i@@_j^v6q9s=$#vrheg=qk&oimu3anq$cz#o%w5rve_)6v!_!'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-# Admin page settings
-ADMIN_ENABLED = True
-
-ALLOWED_HOSTS = ['35.158.157.59']
+ALLOWED_HOSTS = ['35.158.157.59', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -44,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-if ADMIN_ENABLED is True:
+if config('ADMIN_ENABLED') is True:
     INSTALLED_APPS.append('django.contrib.admin')
     
 MIDDLEWARE = [
