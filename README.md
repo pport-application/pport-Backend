@@ -37,7 +37,7 @@ The commands for activating venv are as follows.
 
 ```
   cd pport-Backend
-  source ./venv/bin/activate
+  . venv/bin/activate
 ```
 
 ## Git Documentation
