@@ -31,7 +31,7 @@ DEBUG = True
 # Admin page settings
 ADMIN_ENABLED = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['35.158.157.59']
 
 
 # Application definition
