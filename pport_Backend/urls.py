@@ -7,4 +7,4 @@ urlpatterns = [
 ]
 
 if settings.ADMIN_ENABLED:
-    urlpatterns += [path('admin/', admin.site.urls),]
+    urlpatterns += [path(r'admin/', admin.site.urls),]
