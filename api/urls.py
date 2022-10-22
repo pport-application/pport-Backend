@@ -1,7 +1,7 @@
 from django.urls import path
 
-from . import views
+from .v1 import auth
 
 urlpatterns = [
-    path('', views.welcome),
+    path('v1/auth/sign_in/', auth.sign_in),
 ]
