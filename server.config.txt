@@ -1,0 +1,27 @@
+// server static IP adress 3.66.183.245
+// use http://3.66.183.245 to connect backend
+
+// Test Django development
+python3 ~/pport-Backend/manage.py runserver 0.0.0.0:8000
+
+// Test gunicorn
+cd ~/pport-Backend
+gunicorn --bind 0.0.0.0:8000 pport_Backend.wsgi
+
+// The Gunicorn socket file directory
+/etc/systemd/system/gunicorn.socket
+
+// systemd service file for Gunicorn
+/etc/systemd/system/gunicorn.service
+
+// Test gunicor socket
+curl --unix-socket /run/gunicorn.sock localhost
+
+// Test nginx
+sudo nginx -t
+
+// Nginx error logs
+sudo tail -F /var/log/nginx/error.log
+
+// Check the Gunicorn socket’s logs
+sudo journalctl -u gunicorn.socket

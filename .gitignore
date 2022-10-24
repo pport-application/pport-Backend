@@ -1,1 +1,7 @@
 .env
+venv
+static
+
+api/__pycache__/
+api/v1/__pycache__/
+pport_Backend/__pycache__/

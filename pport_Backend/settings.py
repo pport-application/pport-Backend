@@ -31,7 +31,7 @@ DEBUG = config('DEBUG', cast=bool)
 # Admin page settings
 ADMIN_ENABLED = config('ADMIN_ENABLED', cast=bool)
 
-ALLOWED_HOSTS = ['35.158.157.59', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['3.66.183.245', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -122,7 +122,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
