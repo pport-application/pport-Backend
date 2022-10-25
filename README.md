@@ -23,9 +23,9 @@ Inside *Virtualenv Environment | New Environment* add a new path which is */LOCA
 Close the Settings/Preferences page and go to *Edit Configuration* on the left side of run.
 
 ```
-Script Path: /LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py
-Parameters: runserver
-Python Interpreter: /LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv
+  Script Path: /LOCATION/OF/YOUR/REPOSITORY/pport_Backend/manage.py
+  Parameters: runserver
+  Python Interpreter: /LOCATION/OF/YOUR/REPOSITORY/pport_Backend/venv
 ```
 
 Now, you are ready to develop the project.
@@ -37,7 +37,9 @@ The commands for activating venv are as follows.
 
 ```
   cd pport-Backend
+  python3 -m venv venv
   . venv/bin/activate
+  pip install -r requirements.txt
 ```
 
 ## Git Documentation
