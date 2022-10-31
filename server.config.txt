@@ -25,3 +25,10 @@ sudo tail -F /var/log/nginx/error.log
 
 // Check the Gunicorn socket’s logs
 sudo journalctl -u gunicorn.socket
+
+// Reread the service definition and restart the Gunicorn process
+sudo systemctl daemon-reload
+sudo systemctl restart gunicorn
+
+// Restart Nginx
+sudo systemctl restart nginx
