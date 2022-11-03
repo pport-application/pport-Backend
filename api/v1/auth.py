@@ -2,9 +2,10 @@ from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
-from bson.objectid import ObjectId
 from decouple import config
 
 import uuid
@@ -14,10 +15,11 @@ import smtplib
 import ssl
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def sign_in(request):
     if request.GET.get("email") is None or request.GET.get("password") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     email = str(request.GET.get("email"))
     password = str(request.GET.get("password"))
@@ -25,47 +27,68 @@ def sign_in(request):
     my_client = MongoClient(config("MONGO_CLIENT"))
 
     if my_client.pport.users.find_one({"email": email, "password": password}):
-        my_client.pport.users.update_one({"email": email}, {"$set": {"session": str(uuid.uuid1())}})
-        item = my_client.pport.users.find_one({"email": email, "password": password})
-        my_client.close()
 
-        return Response({"user_id": str(item.get("_id")),
-                         "session": item.get("session"),
-                         "name": item.get("name"),
-                         "surname": item.get("surname"),
-                         "watchlist": item.get("watchlist")}, status=status.HTTP_200_OK)
+        session = str(uuid.uuid1())
+        for i in range(5):
+            if not my_client.pport.users.find_one({"session": session}):
+                my_client.pport.users.update_one({"email": email}, {"$set": {"session": session}})
+                item = my_client.pport.users.find_one({"email": email, "password": password})
+                my_client.close()
+
+                user = User.objects.filter(username__icontains=email)[0]
+                try:
+                    Token.objects.filter(user=user).delete()
+                except (AttributeError, ObjectDoesNotExist):
+                    pass
+                token = Token.objects.create(user=user)
+
+                return Response({"user_id": str(item.get("_id")),
+                                 "session": item.get("session"),
+                                 "watchlist": item.get("watchlist"),
+                                 "token": str(token)}, status=status.HTTP_200_OK)
+            session = str(uuid.uuid1())
+        return Response({"error": "Unable to create session."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
     return Response({"error": "Invalid username or password"}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def sign_out(request):
-    if request.GET.get("user_id") is None or request.GET.get("session") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+    if request.GET.get("session") is None:
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    user_id = request.GET.get("user_id")
-    obj_instance = ObjectId(user_id)
     session = request.GET.get("session")
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
-    if my_client.pport.users.find_one({"_id": obj_instance, "session": session}):
-        my_client.pport.users.update_one({"_id": obj_instance}, {"$unset": {"session": 1}})
+    if my_client.pport.users.find_one({"session": session}):
+        email = my_client.pport.users.find_one({"session": session}, {"email": 1, "_id": 0})["email"]
+        my_client.pport.users.update_one({"session": session}, {"$unset": {"session": 1}})
+
         my_client.close()
+
+        user = User.objects.filter(username__icontains=email)[0]
+        try:
+            Token.objects.filter(user=user).delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
-    return Response({"error": "Invalid user_id or session"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid session."}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def sign_up(request):
     if request.GET.get("name") is None \
             or request.GET.get("surname") is None \
             or request.GET.get("email") is None \
             or request.GET.get("password") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     name = request.GET.get("name")
     surname = request.GET.get("surname")
@@ -83,10 +106,10 @@ def sign_up(request):
     user = my_client.pport.users.find_one({"email": email})
     user_id = user["_id"]
 
-    my_dict = {"user_id": user_id, "all_history": []}
+    my_dict = {"user_id": user_id, "history": []}
     my_client.pport.history.insert_one(my_dict)
 
-    my_dict = {"user_id": user_id, "portfolio": [], "profit": 0, "wallet": {}}
+    my_dict = {"user_id": user_id, "portfolio": [], "wallet": {}}
     my_client.pport.portfolio.insert_one(my_dict)
     my_client.close()
 
@@ -96,10 +119,11 @@ def sign_up(request):
     return Response(status=status.HTTP_200_OK)
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def reset_password(request):
     if request.GET.get("email") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     email = request.GET.get("email")
 
@@ -130,13 +154,14 @@ def reset_password(request):
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
-    return Response({"error": "Invalid user_id or session"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid email address."}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def validate_reset_code(request):
     if request.GET.get("email") is None or request.GET.get("reset_code") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     email = request.GET.get("email")
     reset_code = request.GET.get("reset_code")
@@ -144,7 +169,7 @@ def validate_reset_code(request):
     try:
         reset_code = int(reset_code)
     except (TypeError, ValueError):
-        return Response({"error": "Please provide integer for reset code"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Please provide integer for reset code."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -159,19 +184,17 @@ def validate_reset_code(request):
                 my_client.close()
                 return Response(status=status.HTTP_200_OK)
 
-        my_client.close()
-        return Response({"error": "Please try password reset again."}, status=status.HTTP_400_BAD_REQUEST)
-
     my_client.close()
-    return Response({"error": "Invalid user_id or session"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Please try password reset again."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(["POST", ])
 def change_password(request):
     if request.GET.get("email") is None \
             or request.GET.get("reset_code") is None \
             or request.GET.get("password") is None:
-        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     email = request.GET.get("email")
     reset_code = request.GET.get("reset_code")
@@ -180,7 +203,7 @@ def change_password(request):
     try:
         reset_code = int(reset_code)
     except (TypeError, ValueError):
-        return Response({"error": "Please provide integer for reset code"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Please provide integer for reset code."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -207,6 +230,47 @@ def change_password(request):
         return Response({"error": "Please try password reset again.", "my_doc": my_doc, "reset_code": reset_code}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
-    return Response({"error": "Invalid user_id or session"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid email address."}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
+@api_view(["POST", ])
+def validate_session(request):
+    if request.GET.get("session") is None:
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+    session = request.GET.get("session")
+
+    my_client = MongoClient(config("MONGO_CLIENT"))
+
+    if my_client.pport.users.find_one({"session": session}):
+        return Response(1, status=status.HTTP_200_OK)
+
+    return Response(0, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@api_view(["GET", ])
+def get_token(request):
+    if request.GET.get("session") is None:
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+    session = request.GET.get("session")
+
+    my_client = MongoClient(config("MONGO_CLIENT"))
+
+    if my_client.pport.users.find_one({"session": session}):
+        email = my_client.pport.users.find_one({"session": session}, {"email": 1, "_id": 0})["email"]
+        my_client.close()
+
+        user = User.objects.filter(username__icontains=email)[0]
+        try:
+            Token.objects.filter(user=user).delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+        token = Token.objects.create(user=user)
+
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+
+    my_client.close()
+    return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)
