@@ -1,14 +1,16 @@
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
 from decouple import config
 
 
 @csrf_exempt
-@api_view(["DELETE", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def delete_user(request):
     if request.GET.get("email") is None or request.GET.get("password") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -34,7 +36,8 @@ def delete_user(request):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_user_info(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -55,6 +58,7 @@ def get_user_info(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def update_user_info(request):
     if request.GET.get("session") is None \
             or request.GET.get("name") is None \
@@ -81,6 +85,7 @@ def update_user_info(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def change_password(request):
     if request.GET.get("session") is None \
             or request.GET.get("old_password") is None \

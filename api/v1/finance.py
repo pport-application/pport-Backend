@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from decouple import config
 import urllib.request
@@ -9,7 +10,8 @@ import json
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_tickers(request):
     if request.GET.get("exchange_code") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -29,7 +31,8 @@ def get_tickers(request):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_exchange_codes(_):
 
     eod_url = config("EOD_URL") + "exchanges-list/?api_token=" + config("EOD_API_KEY") + "&fmt=json"
@@ -56,7 +59,8 @@ def get_exchange_codes(_):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_currency_codes(_):
 
     eod_url = config("EOD_URL") + "exchange-symbol-list/FOREX?api_token=" + config("EOD_API_KEY") + "&fmt=json"

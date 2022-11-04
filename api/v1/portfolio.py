@@ -1,13 +1,15 @@
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 from decouple import config
 
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def deposit_currency(request):
     if request.GET.get("session") is None \
             or request.GET.get("currency") is None \
@@ -57,6 +59,7 @@ def deposit_currency(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def withdraw_currency(request):
     if request.GET.get("session") is None \
             or request.GET.get("currency") is None \
@@ -111,7 +114,8 @@ def withdraw_currency(request):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_portfolio(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -133,6 +137,7 @@ def get_portfolio(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def deposit_ticker(request):
     if request.GET.get("session") is None \
             or request.GET.get("ticker") is None \
@@ -201,6 +206,7 @@ def deposit_ticker(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def withdraw_ticker(request):
     if request.GET.get("session") is None \
             or request.GET.get("ticker") is None \
@@ -267,7 +273,8 @@ def withdraw_ticker(request):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_history(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)

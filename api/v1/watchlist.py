@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from decouple import config
 import urllib.request
@@ -10,7 +11,8 @@ import json
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_watchlist_data(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -50,7 +52,8 @@ def get_watchlist_data(request):
 
 
 @csrf_exempt
-@api_view(["DELETE", ])
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def delete_watchlist_item(request):
     if request.GET.get("session") is None or request.GET.get("ticker") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -73,6 +76,7 @@ def delete_watchlist_item(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def add_watchlist_item(request):
     if request.GET.get("session") is None or request.GET.get("ticker") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)

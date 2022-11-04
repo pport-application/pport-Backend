@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
@@ -12,6 +13,7 @@ from datetime import datetime, timedelta
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAdminUser])
 def delete_reset_codes(_):
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -24,6 +26,7 @@ def delete_reset_codes(_):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAdminUser])
 def update_database(_):
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -42,6 +45,7 @@ def update_database(_):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAdminUser])
 def update_mongo(_):
     my_client = MongoClient(config("MONGO_CLIENT"))
 

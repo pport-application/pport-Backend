@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -55,6 +56,7 @@ def sign_in(request):
 
 @csrf_exempt
 @api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def sign_out(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -250,7 +252,7 @@ def validate_session(request):
 
 
 @csrf_exempt
-@api_view(["GET", ])
+@api_view(["POST", ])
 def get_token(request):
     if request.GET.get("session") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
