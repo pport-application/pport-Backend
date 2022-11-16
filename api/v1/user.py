@@ -6,17 +6,18 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
 from decouple import config
-
+import json
 
 @csrf_exempt
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def delete_user(request):
-    if request.GET.get("email") is None or request.GET.get("password") is None:
+    body = json.loads(request.body)
+    if body["email"] is None or body["password"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = request.GET.get("email")
-    password = request.GET.get("password")
+    email = body["email"]
+    password = body["password"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -39,10 +40,11 @@ def delete_user(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -60,16 +62,17 @@ def get_user_info(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def update_user_info(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("name") is None \
-            or request.GET.get("surname") is None \
-            or request.GET.get("email") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["name"] is None \
+            or body["surname"] is None \
+            or body["email"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    name = request.GET.get("name")
-    surname = request.GET.get("surname")
-    email = request.GET.get("email")
-    session = request.GET.get("session")
+    name = body["name"]
+    surname = body["surname"]
+    email = body["email"]
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -87,14 +90,15 @@ def update_user_info(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def change_password(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("old_password") is None \
-            or request.GET.get("new_password") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["old_password"] is None \
+            or body["new_password"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    old_password = request.GET.get("old_password")
-    new_password = request.GET.get("new_password")
-    session = request.GET.get("session")
+    old_password = body["old_password"]
+    new_password = body["new_password"]
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 

@@ -5,22 +5,23 @@ from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 from decouple import config
-
+import json
 
 @csrf_exempt
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def deposit_currency(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("currency") is None \
-            or request.GET.get("amount") is None \
-            or request.GET.get("timestamp") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["currency"] is None \
+            or body["amount"] is None \
+            or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    currency = request.GET.get("currency")
-    amount = request.GET.get("amount")
-    session = request.GET.get("session")
-    timestamp = request.GET.get("timestamp")
+    currency = body["currency"]
+    amount = body["amount"]
+    session = body["session"]
+    timestamp = body["timestamp"]
 
     try:
         amount = float(amount)
@@ -61,16 +62,17 @@ def deposit_currency(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def withdraw_currency(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("currency") is None \
-            or request.GET.get("amount") is None \
-            or request.GET.get("timestamp") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["currency") is None \
+            or body["amount") is None \
+            or body["timestamp") is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    currency = request.GET.get("currency")
-    amount = request.GET.get("amount")
-    session = request.GET.get("session")
-    timestamp = request.GET.get("timestamp")
+    currency = body["currency"]
+    amount = body["amount"]
+    session = body["session"]
+    timestamp = body["timestamp"]
 
     try:
         amount = float(amount)
@@ -117,10 +119,11 @@ def withdraw_currency(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def get_portfolio(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -129,7 +132,7 @@ def get_portfolio(request):
         data = my_client.pport.portfolio.find_one({"user_id": user["_id"]}, {"user_id": 0, "_id": 0})
 
         my_client.close()
-        return Response({"data": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
     my_client.close()
     return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -139,20 +142,21 @@ def get_portfolio(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def deposit_ticker(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("ticker") is None \
-            or request.GET.get("count") is None \
-            or request.GET.get("purchase_cost") is None \
-            or request.GET.get("currency") is None \
-            or request.GET.get("timestamp") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["ticker"] is None \
+            or body["count"] is None \
+            or body["purchase_cost"] is None \
+            or body["currency"] is None \
+            or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
-    ticker = request.GET.get("ticker")
-    count = request.GET.get("count")
-    purchase_cost = request.GET.get("purchase_cost")
-    currency = request.GET.get("currency")
-    timestamp = request.GET.get("timestamp")
+    session = body["session"]
+    ticker = body["ticker"]
+    count = body["count"]
+    purchase_cost = body["purchase_cost"]
+    currency = body["currency"]
+    timestamp = body["timestamp"]
 
     try:
         count = float(count)
@@ -172,7 +176,7 @@ def deposit_ticker(request):
 
         if portfolio is not None:
             count = count + portfolio["portfolio"][0]["count"]
-            new_balance = portfolio["portfolio"][0]["balance"] - purchase_cost
+            new_balance = portfolio["portfolio"][0]["balance"] + purchase_cost
             my_client.pport.portfolio.find_one_and_update({"user_id": user["_id"], "portfolio": {"$elemMatch": {"ticker": ticker}}},
                                                           {"$set": {"portfolio.$":
                                                                         {"ticker": ticker,
@@ -208,20 +212,21 @@ def deposit_ticker(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def withdraw_ticker(request):
-    if request.GET.get("session") is None \
-            or request.GET.get("ticker") is None \
-            or request.GET.get("count") is None \
-            or request.GET.get("revenue") is None \
-            or request.GET.get("currency") is None \
-            or request.GET.get("timestamp") is None:
+    body = json.loads(request.body)
+    if body["session"] is None \
+            or body["ticker"] is None \
+            or body["count"] is None \
+            or body["revenue"] is None \
+            or body["currency"] is None \
+            or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
-    ticker = request.GET.get("ticker")
-    count = request.GET.get("count")
-    revenue = request.GET.get("revenue")
-    currency = request.GET.get("currency")
-    timestamp = request.GET.get("timestamp")
+    session = body["session"]
+    ticker = body["ticker"]
+    count = body["count"]
+    revenue = body["revenue"]
+    currency = body["currency"]
+    timestamp = body["timestamp"]
 
     try:
         count = float(count)
@@ -276,10 +281,11 @@ def withdraw_ticker(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def get_history(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -288,7 +294,7 @@ def get_history(request):
         data = my_client.pport.history.find_one({"user_id": user["_id"]}, {"user_id": 0, "_id": 0})
 
         my_client.close()
-        return Response({"data": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
     my_client.close()
     return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)

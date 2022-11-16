@@ -14,10 +14,11 @@ import json
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def get_watchlist_data(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -36,12 +37,9 @@ def get_watchlist_data(request):
             eod_url += "&fmt=json&s=" + (",".join(tickers_list[1:]))
 
         try:
-            http_request = urllib.request.urlopen(eod_url)
-            data = json.loads(http_request.read())
-            for item in data:
-                for key in item:
-                    item[key] = str(item[key])
-            return Response({"data", str(data)}, status=status.HTTP_200_OK)
+            http_request = urllib.request.urlopen(eod_url).read()
+            data = json.loads(http_request.decode('utf-8'))
+            return Response(data, status=status.HTTP_200_OK)
         except HTTPError:
             return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)
         except URLError:
@@ -55,11 +53,12 @@ def get_watchlist_data(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def delete_watchlist_item(request):
-    if request.GET.get("session") is None or request.GET.get("ticker") is None:
+    body = json.loads(request.body)
+    if body["session"] is None or body["ticker"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    ticker = request.GET.get("ticker")
-    session = request.GET.get("session")
+    ticker = body["ticker"]
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -78,11 +77,12 @@ def delete_watchlist_item(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def add_watchlist_item(request):
-    if request.GET.get("session") is None or request.GET.get("ticker") is None:
+    body = json.loads(request.body)
+    if body["session"]is None or ["ticker"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
-    ticker = request.GET.get("ticker")
+    session = body["session"]
+    ticker = body["ticker"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 

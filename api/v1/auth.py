@@ -1,3 +1,4 @@
+import json
 from pymongo import MongoClient
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,11 +20,13 @@ import ssl
 @csrf_exempt
 @api_view(["POST", ])
 def sign_in(request):
-    if request.GET.get("email") is None or request.GET.get("password") is None:
+    return Response(status=status.HTTP_200_OK)
+    body = json.loads(request.body)
+    if body["email"] is None or body["password"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = str(request.GET.get("email"))
-    password = str(request.GET.get("password"))
+    email = body["email"]
+    password = body["password"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -43,7 +46,9 @@ def sign_in(request):
                     pass
                 token = Token.objects.create(user=user)
 
-                return Response({"user_id": str(item.get("_id")),
+                return Response({"name": item.get("name"),
+                                 "surname": item.get("surname"),
+                                 "email": item.get("email"),
                                  "session": item.get("session"),
                                  "watchlist": item.get("watchlist"),
                                  "token": str(token)}, status=status.HTTP_200_OK)
@@ -58,10 +63,11 @@ def sign_in(request):
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
 def sign_out(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -86,16 +92,22 @@ def sign_out(request):
 @csrf_exempt
 @api_view(["POST", ])
 def sign_up(request):
-    if request.GET.get("name") is None \
-            or request.GET.get("surname") is None \
-            or request.GET.get("email") is None \
-            or request.GET.get("password") is None:
+    body = json.loads(request.body)
+    if body["name"] is None \
+            or body["surname"] is None \
+            or body["email"] is None \
+            or body["password"] is None \
+            or body["password_confirm"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(body, status=status.HTTP_200_OK)
+    name = body["name"]
+    surname = body["surname"]
+    email = body["email"]
+    password = body["password"]
+    password_confirm = body["password_confirm"]
 
-    name = request.GET.get("name")
-    surname = request.GET.get("surname")
-    email = request.GET.get("email")
-    password = request.GET.get("password")
+    if (password != password_confirm):
+        return Response({"error": "Password mismatch."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -124,10 +136,11 @@ def sign_up(request):
 @csrf_exempt
 @api_view(["POST", ])
 def reset_password(request):
-    if request.GET.get("email") is None:
+    body = json.loads(request.body)
+    if body["email"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = request.GET.get("email")
+    email = body["email"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -162,11 +175,12 @@ def reset_password(request):
 @csrf_exempt
 @api_view(["POST", ])
 def validate_reset_code(request):
-    if request.GET.get("email") is None or request.GET.get("reset_code") is None:
+    body = json.loads(request.body)
+    if body["email"] is None or body["reset_code"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = request.GET.get("email")
-    reset_code = request.GET.get("reset_code")
+    email = body["email"]
+    reset_code = body["reset_code"]
 
     try:
         reset_code = int(reset_code)
@@ -193,15 +207,20 @@ def validate_reset_code(request):
 @csrf_exempt
 @api_view(["POST", ])
 def change_password(request):
-    if request.GET.get("email") is None \
-            or request.GET.get("reset_code") is None \
-            or request.GET.get("password") is None:
+    body = json.loads(request.body)
+    if body["email"] is None \
+            or body["reset_code"] is None \
+            or body["new_password"] is None \
+            or body["new_password_confirm"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = request.GET.get("email")
-    reset_code = request.GET.get("reset_code")
-    new_password = request.GET.get("password")
+    email = body["email"]
+    reset_code = body["reset_code"]
+    new_password = body["new_password"]
+    new_password_confirm = body["new_password_confirm"]
 
+    if (new_password != new_password_confirm):
+        return Response({"error": "Password mismatch."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         reset_code = int(reset_code)
     except (TypeError, ValueError):
@@ -229,7 +248,7 @@ def change_password(request):
                 return Response(status=status.HTTP_200_OK)
 
         my_client.close()
-        return Response({"error": "Please try password reset again.", "my_doc": my_doc, "reset_code": reset_code}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Please try password reset again."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
     return Response({"error": "Invalid email address."}, status=status.HTTP_404_NOT_FOUND)
@@ -238,26 +257,28 @@ def change_password(request):
 @csrf_exempt
 @api_view(["POST", ])
 def validate_session(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
     if my_client.pport.users.find_one({"session": session}):
-        return Response(1, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
 
-    return Response(0, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 @csrf_exempt
 @api_view(["POST", ])
 def get_token(request):
-    if request.GET.get("session") is None:
+    body = json.loads(request.body)
+    if body["session"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    session = request.GET.get("session")
+    session = body["session"]
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
