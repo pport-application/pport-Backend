@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from bson.objectid import ObjectId
 from decouple import config
 import json
@@ -97,7 +99,6 @@ def change_password(request):
             or body["new_password_confirm"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if 
     old_password = body["old_password"]
     new_password = body["new_password"]
     new_password_confirm = body["new_password_confirm"]
@@ -109,11 +110,11 @@ def change_password(request):
     my_client = MongoClient(config("MONGO_CLIENT"))
 
     if my_client.pport.users.find_one({"session": session, "password": old_password}):
-        my_client.pport.users.update_one({"session": session}, {"$set": {"password": new_password}})
+        user = my_client.pport.users.find_one_and_update({"session": session}, {"$set": {"password": new_password}}, {"email": 1})
 
         my_client.close()
 
-        user = User.objects.filter(username__icontains=email)[0]
+        user = User.objects.filter(username__icontains=user["email"])[0]
         user.set_password(new_password)
         user.save()
         token = Token.objects.get(user=user)
