@@ -20,7 +20,6 @@ import ssl
 @csrf_exempt
 @api_view(["POST", ])
 def sign_in(request):
-    return Response(status=status.HTTP_200_OK)
     body = json.loads(request.body)
     if body["email"] is None or body["password"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)

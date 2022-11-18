@@ -64,9 +64,9 @@ def deposit_currency(request):
 def withdraw_currency(request):
     body = json.loads(request.body)
     if body["session"] is None \
-            or body["currency") is None \
-            or body["amount") is None \
-            or body["timestamp") is None:
+            or body["currency"] is None \
+            or body["amount"] is None \
+            or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     currency = body["currency"]

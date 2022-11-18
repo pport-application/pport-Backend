@@ -93,12 +93,18 @@ def change_password(request):
     body = json.loads(request.body)
     if body["session"] is None \
             or body["old_password"] is None \
-            or body["new_password"] is None:
+            or body["new_password"] is None \
+            or body["new_password_confirm"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
+    if 
     old_password = body["old_password"]
     new_password = body["new_password"]
+    new_password_confirm = body["new_password_confirm"]
     session = body["session"]
+
+    if new_password != new_password_confirm:
+        return Response({"error": "Password mismatch."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client = MongoClient(config("MONGO_CLIENT"))
 
@@ -106,6 +112,14 @@ def change_password(request):
         my_client.pport.users.update_one({"session": session}, {"$set": {"password": new_password}})
 
         my_client.close()
+
+        user = User.objects.filter(username__icontains=email)[0]
+        user.set_password(new_password)
+        user.save()
+        token = Token.objects.get(user=user)
+        token.delete()
+        Token.objects.create(user=user)
+
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
