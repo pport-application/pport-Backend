@@ -294,7 +294,29 @@ def get_history(request):
         data = my_client.pport.history.find_one({"user_id": user["_id"]}, {"user_id": 0, "_id": 0})
 
         my_client.close()
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(data["history"], status=status.HTTP_200_OK)
+
+    my_client.close()
+    return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)
+
+@csrf_exempt
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
+def delete_history(request):
+    body = json.loads(request.body)
+    if body["session"] is None:
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+    session = body["session"]
+
+    my_client = MongoClient(config("MONGO_CLIENT"))
+
+    user = my_client.pport.users.find_one({"session": session}, {"_id": 1})
+    if user is not None:
+        my_client.pport.history.find_one_and_update({"user_id": user["_id"]}, {"$set": {"history": []}})
+
+        my_client.close()
+        return Response(status=status.HTTP_200_OK)
 
     my_client.close()
     return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)

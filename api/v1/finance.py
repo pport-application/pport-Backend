@@ -58,16 +58,6 @@ def get_exchange_codes(request):
         try:
             http_request = urllib.request.urlopen(eod_url).read()
             data = json.loads(http_request.decode('utf-8'))
-            us_exchanges = ["NYSE", "NASDAQ", "BATS", "OTCQB", "PINK", "OTCQX", "OTCMKTS", "NMFQS", "NYSE MKT", "OTCBB", "OTCGREY", "BATS", "OTC"]
-            for item in us_exchanges:
-                data.append({
-                    "Name": item,
-                    "Code": "US",
-                    "OperatingMIC": None,
-                    "Country": "USA",
-                    "Currency": "USD"
-                })
-            data.pop(0)
             return Response(data, status=status.HTTP_200_OK)
         except HTTPError:
             return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)

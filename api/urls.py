@@ -30,4 +30,5 @@ urlpatterns = [
     path("v1/portfolio/deposit_ticker", portfolio.deposit_ticker),
     path("v1/portfolio/withdraw_ticker", portfolio.withdraw_ticker),
     path("v1/portfolio/get_history", portfolio.get_history),
+    path("v1/portfolio/delete_history", portfolio.delete_history),
 ]
