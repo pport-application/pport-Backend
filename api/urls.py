@@ -14,6 +14,7 @@ urlpatterns = [
     path("v1/admin/delete_reset_codes", admin.delete_reset_codes),
     path("v1/admin/update_database", admin.update_database),
     path("v1/admin/update_mongo", admin.update_mongo),
+    path("v1/admin/update_exchanges", admin.update_exchanges),
     path("v1/user/delete_user", user.delete_user),
     path("v1/user/get_user_info", user.get_user_info),
     path("v1/user/update_user_info", user.update_user_info),

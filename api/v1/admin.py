@@ -89,3 +89,23 @@ def update_mongo(_):
 
     my_client.close()
     return Response(status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@api_view(["POST", ])
+@permission_classes([IsAdminUser])
+def update_exchanges(_):
+    my_client = MongoClient(config("MONGO_CLIENT"))
+    eod_url = config("EOD_URL") + "exchanges-list/?api_token=" + config("EOD_API_KEY") + "&fmt=json"
+        try:
+            http_request = urllib.request.urlopen(eod_url).read()
+            data = json.loads(http_request.decode('utf-8'))
+            my_client.pport.exchanges.delete_many()
+            my_client.close()
+            return Response(data, status=status.HTTP_200_OK)
+        except HTTPError:
+            return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)
+        except URLError:
+            return Response({"error": "URL Error."}, status=status.HTTP_400_BAD_REQUEST)
+    my_client.close()
+    return Response(status=status.HTTP_200_OK)
