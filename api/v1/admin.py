@@ -7,6 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from decouple import config
+import urllib.request
+from urllib.error import URLError, HTTPError
+import json
 
 from datetime import datetime, timedelta
 
@@ -97,15 +100,16 @@ def update_mongo(_):
 def update_exchanges(_):
     my_client = MongoClient(config("MONGO_CLIENT"))
     eod_url = config("EOD_URL") + "exchanges-list/?api_token=" + config("EOD_API_KEY") + "&fmt=json"
-        try:
-            http_request = urllib.request.urlopen(eod_url).read()
-            data = json.loads(http_request.decode('utf-8'))
-            my_client.pport.exchanges.delete_many()
-            my_client.close()
-            return Response(data, status=status.HTTP_200_OK)
-        except HTTPError:
-            return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)
-        except URLError:
-            return Response({"error": "URL Error."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        http_request = urllib.request.urlopen(eod_url).read()
+        data = json.loads(http_request.decode('utf-8'))
+        my_client.pport.exchanges.drop()
+        my_client.pport.exchanges.insert_many(data)
+        my_client.close()
+        return Response(status=status.HTTP_200_OK)
+    except HTTPError:
+        return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)
+    except URLError:
+        return Response({"error": "URL Error."}, status=status.HTTP_400_BAD_REQUEST)
     my_client.close()
     return Response(status=status.HTTP_200_OK)

@@ -23,6 +23,7 @@ urlpatterns = [
     path("v1/watchlist/delete_watchlist_item", watchlist.delete_watchlist_item),
     path("v1/watchlist/add_watchlist_item", watchlist.add_watchlist_item),
     path("v1/finance/get_tickers", finance.get_tickers),
+    path("v1/finance/validate_ticker", finance.validate_ticker),
     path("v1/finance/get_exchange_codes", finance.get_exchange_codes),
     path("v1/finance/get_currency_codes", finance.get_currency_codes),
     path("v1/portfolio/deposit_currency", portfolio.deposit_currency),

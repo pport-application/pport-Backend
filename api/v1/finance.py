@@ -42,6 +42,29 @@ def get_tickers(request):
 @csrf_exempt
 @api_view(["POST", ])
 @permission_classes([IsAuthenticated])
+def validate_ticker(request):
+    body = json.loads(request.body)
+    if body["session"] is None or if body["ticker"] is None:
+        return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    session = body["session"]
+    ticker = body["ticker"]
+
+    my_client = MongoClient(config("MONGO_CLIENT"))
+
+    user = my_client.pport.users.find_one({"session": session}, {"_id": 1})
+    if user is not None:
+        result = my_client.pport.tickers.find({"Code": ticker})
+        my_client.close()
+        if result is None:
+            return Response({"exists": 0}, status=status.HTTP_200_OK)
+        return Response({"exists": 1}, status=status.HTTP_200_OK)
+    my_client.close()
+    return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)
+
+@csrf_exempt
+@api_view(["POST", ])
+@permission_classes([IsAuthenticated])
 def get_exchange_codes(request):
     body = json.loads(request.body)
     if body["session"] is None:
