@@ -41,9 +41,9 @@ def get_watchlist_data(request):
             data = json.loads(http_request.decode('utf-8'))
             return Response(data, status=status.HTTP_200_OK)
         except HTTPError:
-            return Response({"error": "HTTP Error."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Please try again later."}, status=status.HTTP_400_BAD_REQUEST)
         except URLError:
-            return Response({"error": "URL Error."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Please try again later."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
     return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)

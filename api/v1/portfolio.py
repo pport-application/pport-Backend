@@ -146,7 +146,7 @@ def deposit_ticker(request):
     if body["session"] is None \
             or body["ticker"] is None \
             or body["count"] is None \
-            or body["purchase_cost"] is None \
+            or body["charge"] is None \
             or body["currency"] is None \
             or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -154,13 +154,13 @@ def deposit_ticker(request):
     session = body["session"]
     ticker = body["ticker"]
     count = body["count"]
-    purchase_cost = body["purchase_cost"]
+    charge = body["charge"]
     currency = body["currency"]
     timestamp = body["timestamp"]
 
     try:
         count = float(count)
-        purchase_cost = -float(purchase_cost)
+        charge = -float(charge)
         timestamp = int(timestamp)
     except (TypeError, ValueError):
         return Response({"error": "Please provide values in valid format."}, status=status.HTTP_400_BAD_REQUEST)
@@ -172,11 +172,11 @@ def deposit_ticker(request):
         portfolio = my_client.pport.portfolio.find_one({"user_id": user["_id"], "portfolio": {"$elemMatch": {"ticker": ticker}}},
                                                        {"portfolio.$": 1, "_id": 0})
 
-        new_balance = purchase_cost
+        new_balance = charge
 
         if portfolio is not None:
             count = count + portfolio["portfolio"][0]["count"]
-            new_balance = portfolio["portfolio"][0]["balance"] + purchase_cost
+            new_balance = portfolio["portfolio"][0]["balance"] + charge
             my_client.pport.portfolio.find_one_and_update({"user_id": user["_id"], "portfolio": {"$elemMatch": {"ticker": ticker}}},
                                                           {"$set": {"portfolio.$":
                                                                         {"ticker": ticker,
@@ -188,14 +188,14 @@ def deposit_ticker(request):
                                                           {"$push": {"portfolio":
                                                                         {"ticker": ticker,
                                                                          "count": count,
-                                                                         "balance": purchase_cost,
+                                                                         "balance": charge,
                                                                          "currency": currency}}})
 
         my_client.pport.history.find_one_and_update({"user_id": user["_id"]},
                                                     {"$push": {"history": {"from": "portfolio",
                                                                            "ticker": ticker,
                                                                            "count": count,
-                                                                           "purchase_cost": purchase_cost,
+                                                                           "charge": charge,
                                                                            "currency": currency,
                                                                            "type": 1,
                                                                            "balance": new_balance,
@@ -216,7 +216,7 @@ def withdraw_ticker(request):
     if body["session"] is None \
             or body["ticker"] is None \
             or body["count"] is None \
-            or body["revenue"] is None \
+            or body["charge"] is None \
             or body["currency"] is None \
             or body["timestamp"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
@@ -224,13 +224,13 @@ def withdraw_ticker(request):
     session = body["session"]
     ticker = body["ticker"]
     count = body["count"]
-    revenue = body["revenue"]
+    charge = body["charge"]
     currency = body["currency"]
     timestamp = body["timestamp"]
 
     try:
         count = float(count)
-        revenue = float(revenue)
+        charge = float(charge)
         timestamp = int(timestamp)
     except (TypeError, ValueError):
         return Response({"error": "Please provide values in valid format."}, status=status.HTTP_400_BAD_REQUEST)
@@ -248,7 +248,7 @@ def withdraw_ticker(request):
                             status=status.HTTP_400_BAD_REQUEST)
 
         count = portfolio["portfolio"][0]["count"] - count
-        new_balance = portfolio["portfolio"][0]["balance"] + revenue
+        new_balance = portfolio["portfolio"][0]["balance"] + charge
         if count == 0:
             my_client.pport.portfolio.find_one_and_update({"user_id": user["_id"]},
                                                           {"$pull": {"portfolio": {"ticker": ticker}}})
@@ -264,7 +264,7 @@ def withdraw_ticker(request):
                                                     {"$push": {"history": {"from": "portfolio",
                                                                            "ticker": ticker,
                                                                            "count": count,
-                                                                           "revenue": revenue,
+                                                                           "charge": charge,
                                                                            "currency": currency,
                                                                            "type": -1,
                                                                            "balance": new_balance,

@@ -55,7 +55,7 @@ def sign_in(request):
         return Response({"error": "Unable to create session."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
-    return Response({"error": "Invalid username or password"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -85,7 +85,7 @@ def sign_out(request):
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
-    return Response({"error": "Invalid session."}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid session."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @csrf_exempt
@@ -168,7 +168,7 @@ def reset_password(request):
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
-    return Response({"error": "Invalid email address."}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid email address."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -250,7 +250,7 @@ def change_password(request):
         return Response({"error": "Please try password reset again."}, status=status.HTTP_400_BAD_REQUEST)
 
     my_client.close()
-    return Response({"error": "Invalid email address."}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "Invalid email address."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt

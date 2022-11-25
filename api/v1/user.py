@@ -35,7 +35,7 @@ def delete_user(request):
         return Response(status=status.HTTP_200_OK)
 
     my_client.close()
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": "User does not exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
