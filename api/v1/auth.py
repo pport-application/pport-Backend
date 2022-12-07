@@ -98,7 +98,6 @@ def sign_up(request):
             or body["password"] is None \
             or body["password_confirm"] is None:
         return Response({"error": "Missing parameters."}, status=status.HTTP_400_BAD_REQUEST)
-    return Response(body, status=status.HTTP_200_OK)
     name = body["name"]
     surname = body["surname"]
     email = body["email"]
@@ -238,11 +237,13 @@ def change_password(request):
                 my_client.pport.users.update_one({"email": email}, {"$set": {"password": new_password}})
                 my_client.pport.reset_password_requests.delete_many({"email": email})
                 user = User.objects.filter(username__icontains=email)[0]
-                user.set_password(new_password)
-                user.save()
-                token = Token.objects.get(user=user)
-                token.delete()
-                Token.objects.create(user=user)
+                try:
+                    user.set_password(new_password)
+                    user.save()
+                    token = Token.objects.get(user=user)
+                    token.delete()
+                except (AttributeError, ObjectDoesNotExist):
+                    pass
                 my_client.close()
                 return Response(status=status.HTTP_200_OK)
 

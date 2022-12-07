@@ -29,17 +29,19 @@ def get_watchlist_data(request):
         my_client.close()
 
         if len(tickers_list) == 0:
-            return Response({"data", {}}, status=status.HTTP_200_OK)
+            return Response([], status=status.HTTP_200_OK)
 
-        eod_url = config("EOD_URL") + "real-time/" + tickers_list[0] + "?api_token=" + config("EOD_API_KEY")
+        eod_url = config("EOD_URL") + "real-time/" + tickers_list[0] + "?api_token=" + config("EOD_API_KEY") + "&fmt=json"
 
         if len(tickers_list) > 1:
-            eod_url += "&fmt=json&s=" + (",".join(tickers_list[1:]))
+            eod_url += "&s=" + (",".join(tickers_list[1:]))
 
         try:
             http_request = urllib.request.urlopen(eod_url).read()
             data = json.loads(http_request.decode('utf-8'))
-            return Response(data, status=status.HTTP_200_OK)
+            if len(tickers_list) > 1:
+                return Response(data, status=status.HTTP_200_OK)
+            return Response([data], status=status.HTTP_200_OK)
         except HTTPError:
             return Response({"error": "Please try again later."}, status=status.HTTP_400_BAD_REQUEST)
         except URLError:
@@ -87,6 +89,9 @@ def add_watchlist_item(request):
     my_client = MongoClient(config("MONGO_CLIENT"))
 
     if my_client.pport.users.find_one({"session": session}):
+        if my_client.pport.users.find_one({"session": session, "watchlist.14": { "$exists": 1}}):
+            my_client.close()
+            return Response({"error": "You cannot add more than 15 tickers to watchlist"}, status=status.HTTP_400_BAD_REQUEST)
         my_client.pport.users.update_one({"session": session},
                                          {"$addToSet": {"watchlist": ticker}})
 

@@ -31,7 +31,7 @@ DEBUG = config('DEBUG', cast=bool)
 # Admin page settings
 ADMIN_ENABLED = config('ADMIN_ENABLED', cast=bool)
 
-ALLOWED_HOSTS = ['3.66.183.245', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['personalportfolio.app', 'www.personalportfolio.app']
 
 
 # Application definition
